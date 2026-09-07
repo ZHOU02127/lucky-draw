@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>幸运抽奖</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, #fff4f7, #fff2df);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #444;
+    }
+    .container {
+      width: 90%;
+      max-width: 520px;
+      background: rgba(255, 255, 255, 0.96);
+      border-radius: 28px;
+      padding: 32px 24px;
+      text-align: center;
+      box-shadow: 0 15px 40px rgba(255, 145, 145, 0.2);
+    }
+    h1 { margin-top: 0; font-size: 32px; color: #ff6f91; }
+    .subtitle { margin-bottom: 28px; color: #888; font-size: 15px; }
+    .prize-list { display: grid; gap: 14px; margin-bottom: 30px; }
+    .prize {
+      padding: 18px;
+      border-radius: 18px;
+      border: 2px solid transparent;
+      transition: 0.18s;
+    }
+    .prize-title { font-size: 19px; font-weight: bold; margin-bottom: 6px; }
+    .first { background: #fff2ce; }
+    .second { background: #ffe7ed; }
+    .encourage { background: #f2f2f2; color: #777; }
+    .highlight {
+      border-color: #ff6f91;
+      transform: scale(1.03);
+      box-shadow: 0 8px 20px rgba(255, 111, 145, 0.22);
+    }
+    #drawBtn {
+      width: 100%;
+      border: none;
+      padding: 17px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #ff8fab, #ff6f91);
+      color: white;
+      font-size: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    #drawBtn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(255, 111, 145, 0.35); }
+    #drawBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .result {
+      margin-top: 24px;
+      min-height: 80px;
+      padding: 18px;
+      border-radius: 18px;
+      background: #fff9fb;
+      display: none;
+    }
+    .result-title { font-size: 24px; font-weight: bold; color: #ff6688; margin-bottom: 8px; }
+    .result-content { font-size: 17px; line-height: 1.6; }
+    .tip { margin-top: 18px; font-size: 12px; color: #aaa; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎉 幸运抽奖 🎉</h1>
+    <div class="subtitle">点击按钮，看看今天会抽到什么吧！</div>
+
+    <div class="prize-list">
+      <div class="prize first" id="prize1">
+        <div class="prize-title">🥇 一等奖</div>
+        <div>视频课 + 2份零食 + 1张贴纸</div>
+      </div>
+
+      <div class="prize second" id="prize2">
+        <div class="prize-title">🥈 二等奖</div>
+        <div>视频课 + 零食 / 贴纸</div>
+      </div>
+
+      <div class="prize encourage" id="prize3">
+        <div class="prize-title">🎁 鼓励奖</div>
+        <div>视频课</div>
+      </div>
+    </div>
+
+    <button id="drawBtn" onclick="drawPrize()">✨ 开始抽奖</button>
+
+    <div class="result" id="result">
+      <div class="result-title" id="resultTitle"></div>
+      <div class="result-content" id="resultContent"></div>
+    </div>
+
+    <div class="tip">祝你好运 🍀</div>
+  </div>
+
+  <script>
+    // 最终中奖池：只包含一等奖与二等奖
+    const finalPrizes = [
+      {
+        name: "🥇 一等奖",
+        content: "恭喜你获得：视频课 + 2份零食 + 1张贴纸 🎉",
+        id: "prize1"
+      },
+      {
+        name: "🥈 二等奖",
+        content: "恭喜你获得：视频课 + 零食 / 贴纸 💕",
+        id: "prize2"
+      }
+    ];
+
+    // 动画池：三个奖项都会经过，包括鼓励奖
+    const animationPrizeIds = ["prize1", "prize2", "prize3"];
+
+    function clearHighlight() {
+      document.querySelectorAll(".prize").forEach(item => {
+        item.classList.remove("highlight");
+      });
+    }
+
+    function drawPrize() {
+      const button = document.getElementById("drawBtn");
+      const result = document.getElementById("result");
+      const resultTitle = document.getElementById("resultTitle");
+      const resultContent = document.getElementById("resultContent");
+
+      button.disabled = true;
+      button.innerText = "🎲 抽奖中...";
+      result.style.display = "none";
+      clearHighlight();
+
+      let count = 0;
+
+      const animation = setInterval(() => {
+        clearHighlight();
+
+        // 三个奖项都会参与抽奖动画
+        const randomIndex = Math.floor(Math.random() * animationPrizeIds.length);
+        document.getElementById(animationPrizeIds[randomIndex]).classList.add("highlight");
+
+        count++;
+
+        if (count >= 20) {
+          clearInterval(animation);
+
+          // 最终概率：一等奖 10%，二等奖 90%，鼓励奖 0%
+          const finalPrize = Math.random() < 0.10
+            ? finalPrizes[0]
+            : finalPrizes[1];
+
+          clearHighlight();
+          document.getElementById(finalPrize.id).classList.add("highlight");
+
+          resultTitle.innerText = finalPrize.name;
+          resultContent.innerText = finalPrize.content;
+          result.style.display = "block";
+
+          button.disabled = false;
+          button.innerText = "🎉 再抽一次";
+        }
+      }, 100);
+    }
+  </script>
+</body>
+</html>
